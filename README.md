@@ -1,36 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mis Finanzas
 
-## Getting Started
+App web para registrar finanzas personales por voz desde Android, basada en `plan-financiero-mexico.xlsx`.
 
-First, run the development server:
+- **Registrar**: botón de micrófono → dices "Ingreso, salario, 14,000" → la app propone tipo, categoría, monto y fecha → confirmas con **Guardar**.
+- **Movimientos**: historial por mes, filtros y borrado.
+- **Presupuesto**: proyectado contra real por categoría, con la regla 65/15/10/10 y el balance a cero de tu Excel.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Stack: Next.js (Vercel) + Supabase (Postgres + login) + API de Claude (interpretación de la frase).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuración
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Supabase**: crea un proyecto, abre *SQL Editor* y ejecuta `supabase/schema.sql`.
+2. **Variables**: copia `.env.example` como `.env.local` y llénalo.
+3. **Local**: `npm install` y luego `npm run dev`; abre http://localhost:3000.
+4. **Vercel**: importa el repo de GitHub y agrega las mismas variables de entorno.
+5. **Primera vez**: crea tu cuenta en `/login`. Después, en Supabase, ve a *Authentication > Sign In / Providers* y desactiva **Allow new users to sign up**, para que nadie más pueda registrarse.
+6. **En el teléfono**: abre la URL en Chrome, menú ⋮ → **Agregar a pantalla principal**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Cómo se interpreta la voz
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`src/app/api/interpretar/route.ts` manda la frase y tu catálogo de categorías a Claude con salida estructurada, así que la categoría siempre es una válida. Si no hay `ANTHROPIC_API_KEY` o la IA falla, se usa `src/lib/reglas.ts`, que entiende el formato "tipo, concepto, monto". Los sinónimos de cada categoría están en `src/lib/finanzas.ts`.
